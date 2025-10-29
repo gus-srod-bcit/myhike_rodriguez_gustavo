@@ -1,6 +1,6 @@
-import {
-    onAuthReady
-} from "./authentication.js"
+import { onAuthReady } from "./authentication.js"
+import { db } from "./firebaseConfig.js";
+import { doc, onSnapshot } from "firebase/firestore";
 
 function showDashboard() 
 {
@@ -54,4 +54,23 @@ function DisplayUserName(user)
     }
 }
 
+function readQuote(day)
+{
+    const quoteDocRef = doc(db, "quotes", day); // Get a reference to the document
+
+    onSnapshot(quoteDocRef, (docSnap) => { // Listen for real-time updates
+        if (docSnap.exists())
+        {
+            document.getElementById("quote-goes-here").innerHTML = docSnap.data().quote;
+        } 
+        else
+        {
+            console.log("No such document!");
+        }
+    }, (error) => {
+        console.error("Error listening to document: ", error);
+    });
+}
+
 showDashboard();
+readQuote("tuesday");
