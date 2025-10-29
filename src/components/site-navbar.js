@@ -1,8 +1,5 @@
 // Import specific functions from the Firebase Auth SDK
-import {
-    onAuthStateChanged,
-} from "firebase/auth";
-
+import { onAuthStateChanged } from "firebase/auth";
 import { auth } from '/src/firebaseConfig.js';
 import { logoutUser } from '/src/authentication.js';
 
