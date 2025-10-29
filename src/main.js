@@ -1,57 +1,29 @@
 import { onAuthReady } from "./authentication.js"
 import { db } from "./firebaseConfig.js";
 import { doc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot, getDoc } from "firebase/firestore";
 
-function showDashboard() 
+function showDashboard()
 {
-    // const nameElement = document.getElementById("name-goes-here"); // the <h1> element to display "Hello, {name}"
+    const nameElement = document.getElementById("name-goes-here"); // the <h1> element to display "Hello, {name}"
 
-    // Wait for Firebase to determine the current authentication state.
-    // onAuthReady() runs the callback once Firebase finishes checking the signed-in user.
-    // The user's name is extracted from the Firebase Authentication object
-    // You can "go to console" to check out current users. 
+    onAuthReady(async (user) => {
+        if (!user)
+        {
+            // If no user is signed in → redirect back to login page.
+            location.href = "index.html";
+            return;
+        }
 
-    onAuthReady(DisplayUserName);
-    
-    // You can also do this inside the onAuthReady() function itself:
-    // onAuthReady((user) => {
-    //     if (!user) {
-    //         // If no user is signed in → redirect back to login page.
-    //         location.href = "index.html";
-    //         return;
-    //     }
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        const name = userDoc.exists() ? userDoc.data().name : user.displayName || user.email;
 
-    //     // If a user is logged in:
-    //     // Use their display name if available, otherwise show their email.
-    //     const name = user.displayName || user.email;
-
-    //     // Update the welcome message with their name/email.
-    //     if (nameElement) {
-    //         nameElement.textContent = `${name}!`;
-    //     }
-    // });
-}
-
-function DisplayUserName(user)
-{
-    const nameElement = document.getElementById("name-goes-here");
-
-    if (!user) 
-    {
-        // If no user is signed in → redirect back to login page.
-        location.href = "index.html";
-        return;
-    }
-
-    // If a user is logged in:
-    // Use their display name if available, otherwise show their email.
-    const name = user.displayName || user.email;
-
-    // Update the welcome message with their name/email.
-    if (nameElement) 
-    {
-        nameElement.textContent = `${name}!`;
-    }
+        // Update the welcome message with their name/email.
+        if (nameElement)
+        {
+            nameElement.textContent = `${name}!`;
+        }
+    });
 }
 
 function readQuote(day)
