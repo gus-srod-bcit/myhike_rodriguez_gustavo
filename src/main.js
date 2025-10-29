@@ -1,6 +1,5 @@
 import { onAuthReady } from "./authentication.js"
 import { db } from "./firebaseConfig.js";
-import { doc, onSnapshot } from "firebase/firestore";
 import { doc, onSnapshot, getDoc } from "firebase/firestore";
 
 function showDashboard()
