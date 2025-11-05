@@ -1,6 +1,7 @@
 import { db } from "./firebaseConfig.js";
 import { auth } from "./firebaseConfig.js";
 import { doc, getDoc, collection, addDoc, serverTimestamp } from "firebase/firestore";
+import 'bootstrap';
 
 //-----------------------------------------------------------
 // Get hike ID from Local Storage
@@ -106,10 +107,9 @@ async function writeReview() {
 
             console.log("Review successfully written!");
             
-            const thankYouModal = new bootstrap.Modal(document.getElementById("thankYouModal"));
-            thankYouModal.show();
-            
             window.location.href = `eachHike.html?docID=${hikeDocID}`;
+            
+            window.location.href = "thanks.html"; // redirect to thank-you page
         }
         catch(error)
         {
