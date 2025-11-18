@@ -117,6 +117,19 @@ async function displayCardsDynamically() {
 
             newcard.querySelector('.card-image').src = `./images/${hike.code}.jpg`;
             newcard.querySelector(".read-more").href = `eachHike.html?docID=${doc.id}`;
+            
+            const hikeDocID= doc.id;
+            const icon = newcard.querySelector("i.material-icons");
+
+            // Give this icon a unique id based on the hike ID
+            icon.id = "save-" + hikeDocID;
+
+            // Decide initial state from bookmarks array
+            const isBookmarked = bookmarks.includes(hikeDocID);
+            icon.innerText = isBookmarked ? "bookmark" : "bookmark_border";
+
+            // On click, call a toggleBookmark
+            icon.onclick = () => toggleBookmark(userId, hikeDocID);
 
             // Attach the new card to the container
             document.getElementById("hikes-go-here").appendChild(newcard);
