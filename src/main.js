@@ -1,29 +1,47 @@
-import { onAuthReady } from "./authentication.js"
+import { onAuthReady } from "./authentication.js";
 import { db } from "./firebaseConfig.js";
-import { doc, onSnapshot, getDoc } from "firebase/firestore";
-import { collection, getDocs, addDoc, serverTimestamp } from "firebase/firestore";
+import {
+  doc,
+  onSnapshot,
+  getDoc,
+  collection,
+  getDocs,
+  addDoc,
+  serverTimestamp,
+  updateDoc,
+  arrayUnion,
+  arrayRemove
+} from "firebase/firestore";
 
-function showDashboard()
-{
-    const nameElement = document.getElementById("name-goes-here"); // the <h1> element to display "Hello, {name}"
 
-    onAuthReady(async (user) => {
-        if (!user)
-        {
-            // If no user is signed in → redirect back to login page.
-            location.href = "index.html";
-            return;
-        }
+function showDashboard() {
+  const nameElement = document.getElementById("name-goes-here");
 
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        const name = userDoc.exists() ? userDoc.data().name : user.displayName || user.email;
+  onAuthReady(async (user) => {
+    if (!user) {
+      location.href = "index.html";
+      return;
+    }
 
-        // Update the welcome message with their name/email.
-        if (nameElement)
-        {
-            nameElement.textContent = `${name}!`;
-        }
-    });
+    // 1. Build a reference to the user document
+    const userRef = doc(db, "users", user.uid);
+
+    // 2. Read that document once
+    const userDoc = await getDoc(userRef);
+    const userData = userDoc.exists() ? userDoc.data() : {};
+
+    // 3. Greet the user
+    const name = userData.name || user.displayName || user.email;
+    if (nameElement) {
+      nameElement.textContent = `${name}!`;
+    }
+
+    // 4. Read bookmarks as a plain array (no globals)
+    const bookmarks = userData.bookmarks || [];
+
+    // 5. Display cards, but now pass userRef and bookmarks (array)
+    await displayCardsDynamically(user.uid, bookmarks);
+  });
 }
 
 function readQuote(day)
