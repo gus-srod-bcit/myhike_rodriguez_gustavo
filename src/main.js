@@ -99,16 +99,16 @@ async function seedHikes() {
     }
 }
 
-async function displayCardsDynamically() {
+async function displayCardsDynamically(userId, bookmarks) {
     let cardTemplate = document.getElementById("hikeCardTemplate");
     const hikesCollectionRef = collection(db, "hikes");
 
     try {
         const querySnapshot = await getDocs(hikesCollectionRef);
-        querySnapshot.forEach(doc => {
-            // Clone the template
+        querySnapshot.forEach(docSnap => {
+            // Clone the card template
             let newcard = cardTemplate.content.cloneNode(true);
-            const hike = doc.data(); // Get hike data once
+            const hike = docSnap.data(); // Get hike data once
 
             // Populate the card with hike data
             newcard.querySelector('.card-title').textContent = hike.name;
@@ -116,9 +116,11 @@ async function displayCardsDynamically() {
             newcard.querySelector('.card-length').textContent = hike.length;
 
             newcard.querySelector('.card-image').src = `./images/${hike.code}.jpg`;
-            newcard.querySelector(".read-more").href = `eachHike.html?docID=${doc.id}`;
+
+            // Add the link with the document ID
+            newcard.querySelector(".read-more").href = `eachHike.html?docID=${docSnap.id}`;
             
-            const hikeDocID= doc.id;
+            const hikeDocID= docSnap.id;
             const icon = newcard.querySelector("i.material-icons");
 
             // Give this icon a unique id based on the hike ID
@@ -126,6 +128,8 @@ async function displayCardsDynamically() {
 
             // Decide initial state from bookmarks array
             const isBookmarked = bookmarks.includes(hikeDocID);
+            
+            // Set initial bookmark icon based on whether this hike is already in the user's bookmarks
             icon.innerText = isBookmarked ? "bookmark" : "bookmark_border";
 
             // On click, call a toggleBookmark
@@ -136,6 +140,36 @@ async function displayCardsDynamically() {
         });
     } catch (error) {
         console.error("Error getting documents: ", error);
+    }
+}
+
+async function toggleBookmark(userId, hikeDocID) {
+    const userRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userRef);
+    const userData = userSnap.data() || {};
+    const bookmarks = userData.bookmarks || [];   // default to empty array
+
+    const iconId = "save-" + hikeDocID;
+    const icon = document.getElementById(iconId);
+
+    // JS function ".includes" will return true if an item is found in the array
+    const isBookmarked = bookmarks.includes(hikeDocID);
+
+    try {
+        if (isBookmarked) {
+            // Remove from Firestore array
+            await updateDoc(userRef, { bookmarks: arrayRemove(hikeDocID) });
+
+            icon.innerText = "bookmark_border";
+
+        } else {
+            // Add to Firestore array
+            await updateDoc(userRef, { bookmarks: arrayUnion(hikeDocID) });
+
+            icon.innerText = "bookmark";
+        }
+    } catch (err) {
+        console.error("Error toggling bookmark:", err);
     }
 }
 
